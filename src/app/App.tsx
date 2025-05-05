@@ -76,21 +76,13 @@ function App() {
   });
 
   useEffect(() => {
-    let finalAgentConfig = searchParams.get("agentConfig");
-    if (!finalAgentConfig || !allAgentSets[finalAgentConfig]) {
-      finalAgentConfig = defaultAgentSetKey;
-      const url = new URL(window.location.toString());
-      url.searchParams.set("agentConfig", finalAgentConfig);
-      window.location.replace(url.toString());
-      return;
-    }
-
-    const agents = allAgentSets[finalAgentConfig];
-    const agentKeyToUse = agents[0]?.name || "";
+    // Always use the career coach
+    const agents = allAgentSets["professionalCoach"];
+    const agentKeyToUse = "careerCoach";
 
     setSelectedAgentName(agentKeyToUse);
     setSelectedAgentConfigSet(agents);
-  }, [searchParams]);
+  }, []);
 
   useEffect(() => {
     if (selectedAgentName && sessionStatus === "DISCONNECTED") {
@@ -343,19 +335,7 @@ function App() {
     }
   };
 
-  const handleAgentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newAgentConfig = e.target.value;
-    const url = new URL(window.location.toString());
-    url.searchParams.set("agentConfig", newAgentConfig);
-    window.location.replace(url.toString());
-  };
-
-  const handleSelectedAgentChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const newAgentName = e.target.value;
-    setSelectedAgentName(newAgentName);
-  };
+  // Agent selection logic removed - only using career coach
 
   useEffect(() => {
     const storedPushToTalkUI = localStorage.getItem("pushToTalkUI");
@@ -408,78 +388,16 @@ function App() {
       <div className="p-5 text-lg font-semibold flex justify-between items-center">
         <div className="flex items-center">
           <div onClick={() => window.location.reload()} style={{ cursor: 'pointer' }}>
-            <Image
-              src="/openai-logomark.svg"
-              alt="OpenAI Logo"
-              width={20}
-              height={20}
-              className="mr-2"
-            />
+            {/* Logo removed */}
           </div>
           <div>
-            Realtime API <span className="text-gray-500">Agents</span>
+            Career Coach <span className="text-gray-500">Assistant</span>
           </div>
         </div>
         <div className="flex items-center">
-          <label className="flex items-center text-base gap-1 mr-2 font-medium">
-            Scenario
-          </label>
-          <div className="relative inline-block">
-            <select
-              value={agentSetKey}
-              onChange={handleAgentChange}
-              className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
-            >
-              {Object.keys(allAgentSets).map((agentKey) => (
-                <option key={agentKey} value={agentKey}>
-                  {agentKey}
-                </option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
-              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.25 3.65a.75.75 0 01-1.04 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-          </div>
+          {/* Scenario selection removed */}
 
-          {agentSetKey && (
-            <div className="flex items-center ml-6">
-              <label className="flex items-center text-base gap-1 mr-2 font-medium">
-                Agent
-              </label>
-              <div className="relative inline-block">
-                <select
-                  value={selectedAgentName}
-                  onChange={handleSelectedAgentChange}
-                  className="appearance-none border border-gray-300 rounded-lg text-base px-2 py-1 pr-8 cursor-pointer font-normal focus:outline-none"
-                >
-                  {selectedAgentConfigSet?.map(agent => (
-                    <option key={agent.name} value={agent.name}>
-                      {agent.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-gray-600">
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.44l3.71-3.21a.75.75 0 111.04 1.08l-4.25 3.65a.75.75 0 01-1.04 0L5.21 8.27a.75.75 0 01.02-1.06z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          )}
+          {/* Agent selection removed */}
         </div>
       </div>
 
