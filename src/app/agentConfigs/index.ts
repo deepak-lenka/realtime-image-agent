@@ -1,8 +1,8 @@
 import { AllAgentConfigsType } from "@/app/types";
-import professionalCoach from "./professionalCoach";
+import imageGenerationAgent from "./imageGenerationAgent";
 
 export const allAgentSets: AllAgentConfigsType = {
-  professionalCoach,
+  imageGenerationAgent,
 };
 
-export const defaultAgentSetKey = "professionalCoach";
+export const defaultAgentSetKey = "imageGenerationAgent";

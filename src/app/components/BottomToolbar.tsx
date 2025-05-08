@@ -50,7 +50,7 @@ function BottomToolbar({
   }
 
   return (
-    <div className="p-4 flex flex-row items-center justify-center gap-x-8">
+    <div className="p-4 bg-white border-t border-gray-200 shadow-sm flex flex-row items-center justify-center gap-x-6">
       <button
         onClick={onToggleConnection}
         className={getConnectionButtonClasses()}
@@ -59,59 +59,74 @@ function BottomToolbar({
         {getConnectionButtonLabel()}
       </button>
 
-      <div className="flex flex-row items-center gap-2">
-        <input
-          id="push-to-talk"
-          type="checkbox"
-          checked={isPTTActive}
-          onChange={e => setIsPTTActive(e.target.checked)}
-          disabled={!isConnected}
-          className="w-4 h-4"
-        />
-        <label htmlFor="push-to-talk" className="flex items-center cursor-pointer">
-          Push to talk
-        </label>
+      <div className="flex flex-row items-center gap-3">
+        <div className="relative inline-flex items-center">
+          <div className="relative">
+            <input
+              id="push-to-talk"
+              type="checkbox"
+              checked={isPTTActive}
+              onChange={e => setIsPTTActive(e.target.checked)}
+              disabled={!isConnected}
+              className="sr-only"
+            />
+            <div className={`block w-10 h-6 rounded-full transition-colors duration-300 ${isPTTActive ? 'bg-purple-600' : 'bg-gray-300'} ${!isConnected ? 'opacity-50' : ''}`}></div>
+            <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 transform ${isPTTActive ? 'translate-x-4' : ''}`}></div>
+          </div>
+          <label htmlFor="push-to-talk" className={`ml-3 text-sm font-medium ${!isConnected ? 'text-gray-400' : 'text-gray-700'} cursor-pointer`}>
+            Push to talk
+          </label>
+        </div>
         <button
           onMouseDown={handleTalkButtonDown}
           onMouseUp={handleTalkButtonUp}
           onTouchStart={handleTalkButtonDown}
           onTouchEnd={handleTalkButtonUp}
           disabled={!isPTTActive}
-          className={
-            (isPTTUserSpeaking ? "bg-gray-300" : "bg-gray-200") +
-            " py-1 px-4 cursor-pointer rounded-full" +
-            (!isPTTActive ? " bg-gray-100 text-gray-400" : "")
-          }
+          className={`
+            flex items-center justify-center
+            ${isPTTUserSpeaking ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700'}
+            py-2 px-5 rounded-full font-medium transition-all duration-300
+            ${!isPTTActive ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-700 hover:text-white shadow-sm'}
+          `}
         >
-          Talk
+          {isPTTUserSpeaking ? (
+            <>
+              <span className="mr-2 h-2 w-2 bg-white rounded-full animate-pulse"></span>
+              Speaking...
+            </>
+          ) : 'Talk'}
         </button>
       </div>
 
-      <div className="flex flex-row items-center gap-2">
-        <input
-          id="audio-playback"
-          type="checkbox"
-          checked={isAudioPlaybackEnabled}
-          onChange={e => setIsAudioPlaybackEnabled(e.target.checked)}
-          disabled={!isConnected}
-          className="w-4 h-4"
-        />
-        <label htmlFor="audio-playback" className="flex items-center cursor-pointer">
-          Audio playback
-        </label>
+      <div className="flex flex-row items-center gap-3">
+        <div className="relative inline-flex items-center">
+          <div className="relative">
+            <input
+              id="audio-playback"
+              type="checkbox"
+              checked={isAudioPlaybackEnabled}
+              onChange={e => setIsAudioPlaybackEnabled(e.target.checked)}
+              disabled={!isConnected}
+              className="sr-only"
+            />
+            <div className={`block w-10 h-6 rounded-full transition-colors duration-300 ${isAudioPlaybackEnabled ? 'bg-purple-600' : 'bg-gray-300'} ${!isConnected ? 'opacity-50' : ''}`}></div>
+            <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 transform ${isAudioPlaybackEnabled ? 'translate-x-4' : ''}`}></div>
+          </div>
+          <label htmlFor="audio-playback" className={`ml-3 text-sm font-medium ${!isConnected ? 'text-gray-400' : 'text-gray-700'} cursor-pointer`}>
+            Audio playback
+          </label>
+        </div>
       </div>
 
-      <div className="flex flex-row items-center gap-2">
+      {/* Logs toggle hidden but functionality preserved */}
+      <div className="hidden">
         <input
           id="logs"
           type="checkbox"
           checked={isEventsPaneExpanded}
           onChange={e => setIsEventsPaneExpanded(e.target.checked)}
-          className="w-4 h-4"
         />
-        <label htmlFor="logs" className="flex items-center cursor-pointer">
-          Logs
-        </label>
       </div>
     </div>
   );
