@@ -2,7 +2,7 @@
 
 A sophisticated voice-enabled application that helps users create beautiful images using OpenAI's DALL-E 3 model through natural conversation. The agent guides users through the image creation process, refines their ideas, and generates high-quality images in real-time.
 
-![Real-time AI Image Generation Assistant](/public/screenshot.png)
+
 
 ## Features
 
