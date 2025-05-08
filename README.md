@@ -1,72 +1,144 @@
-# Realtime API Agents Demo
+# Real-time AI Image Generation Voice Agent
 
-This is a simple demonstration of more advanced, agentic patterns built on top of the Realtime API. In particular, this demonstrates:
-- Sequential agent handoffs according to a defined agent graph (taking inspiration from [OpenAI Swarm](https://github.com/openai/swarm))
-- Background escalation to more intelligent models like o1-mini for high-stakes decisions
-- Prompting models to follow a state machine, for example to accurately collect things like names and phone numbers with confirmation character by character to authenticate a user.
+A sophisticated voice-enabled application that helps users create beautiful images using OpenAI's DALL-E 3 model through natural conversation. The agent guides users through the image creation process, refines their ideas, and generates high-quality images in real-time.
 
-You should be able to use this repo to prototype your own multi-agent realtime voice app in less than 20 minutes!
+![Real-time AI Image Generation Assistant](/public/screenshot.png)
 
-![Screenshot of the Realtime API Agents Demo](/public/screenshot.png)
+## Features
+
+- **Voice-Driven Interface**: Interact with the AI assistant using your voice for a natural conversation experience
+- **Iterative Image Refinement**: The agent asks thoughtful questions to help refine your image concept
+- **Real-Time Image Generation**: Generate images using OpenAI's DALL-E 3 model with a simple voice command
+- **Modern UI**: Beautiful, responsive interface with real-time feedback and image display
+- **Push-to-Talk Mode**: Option to use push-to-talk for more controlled interactions
 
 ## Setup
 
-- This is a Next.js typescript app
+- This is a Next.js TypeScript application
 - Install dependencies with `npm i`
-- Add your `OPENAI_API_KEY` to your env
+- Add your `OPENAI_API_KEY` to your `.env` file
 - Start the server with `npm run dev`
-- Open your browser to [http://localhost:3000](http://localhost:3000) to see the app. It should automatically connect to the `simpleExample` Agent Set.
+- Open your browser to [http://localhost:3000](http://localhost:3000) to see the app
+- Click the microphone button and start talking to the image generation agent
 
-## Configuring Agents
-Configuration in `src/app/agentConfigs/simpleExample.ts`
-```javascript
+## Image Generation Agent Configuration
+
+The application uses a specialized image generation agent configured in `src/app/agentConfigs/imageGenerationAgent.ts`. This agent is designed to guide users through the image creation process and generate high-quality images using DALL-E 3.
+
+```typescript
 import { AgentConfig } from "@/app/types";
-import { injectTransferTools } from "./utils";
 
-// Define agents
-const haiku: AgentConfig = {
-  name: "haiku",
-  publicDescription: "Agent that writes haikus.", // Context for the agent_transfer tool
-  instructions:
-    "Ask the user for a topic, then reply with a haiku about that topic.",
-  tools: [],
+const imageGenerationAgent: AgentConfig = {
+  name: "imageGenerationAgent",
+  publicDescription: "Agent that helps users generate images using DALL-E 3",
+  instructions: `You are an AI assistant that helps users generate images using DALL-E 3.
+    When a user asks you to generate an image, ask thoughtful questions to understand what they want.
+    Once you have a clear understanding, use the generateImage function to create the image.
+    Be creative and helpful in guiding users to refine their image ideas.`,
+  tools: [
+    {
+      name: "generateImage",
+      description: "Generate an image using DALL-E 3",
+      parameters: {
+        type: "object",
+        properties: {
+          prompt: {
+            type: "string",
+            description: "Detailed description of the image to generate",
+          },
+        },
+        required: ["prompt"],
+      },
+    },
+  ],
+  toolLogic: {
+    generateImage: async (args) => {
+      // The actual image generation is handled by the API endpoint
+      return { success: true };
+    },
+  },
 };
 
-const greeter: AgentConfig = {
-  name: "greeter",
-  publicDescription: "Agent that greets the user.",
-  instructions:
-    "Please greet the user and ask them if they'd like a Haiku. If yes, transfer them to the 'haiku' agent.",
-  tools: [],
-  downstreamAgents: [haiku],
-};
-
-// add the transfer tool to point to downstreamAgents
-const agents = injectTransferTools([greeter, haiku]);
-
-export default agents;
+export default [imageGenerationAgent];
 ```
 
-This fully specifies the agent set that was used in the interaction shown in the screenshot above.
+### How It Works
 
-### Next steps
-- Check out the configs in `src/app/agentConfigs`. The example above is a minimal demo that illustrates the core concepts.
-- [frontDeskAuthentication](src/app/agentConfigs/frontDeskAuthentication) Guides the user through a step-by-step authentication flow, confirming each value character-by-character, authenticates the user with a tool call, and then transfers to another agent. Note that the second agent is intentionally "bored" to show how to prompt for personality and tone.
-- [customerServiceRetail](src/app/agentConfigs/customerServiceRetail) Also guides through an authentication flow, reads a long offer from a canned script verbatim, and then walks through a complex return flow which requires looking up orders and policies, gathering user context, and checking with `o1-mini` to ensure the return is eligible. To test this flow, say that you'd like to return your snowboard and go through the necessary prompts!
+1. **User Interaction**: The user speaks to the agent about what kind of image they want to create
+2. **Prompt Refinement**: The agent asks questions to help refine the image concept
+3. **Image Generation**: When ready, the agent calls the `generateImage` function with a detailed prompt
+4. **API Processing**: The prompt is sent to the `/api/images/generate` endpoint, which calls the OpenAI DALL-E 3 API
+5. **Display**: The generated image is displayed in the UI for the user to see
 
-### Defining your own agents
-- You can copy these to make your own multi-agent voice app! Once you make a new agent set config, add it to `src/app/agentConfigs/index.ts` and you should be able to select it in the UI in the "Scenario" dropdown menu.
-- To see how to define tools and toolLogic, including a background LLM call, see [src/app/agentConfigs/customerServiceRetail/returns.ts](src/app/agentConfigs/customerServiceRetail/returns.ts)
-- To see how to define a detailed personality and tone, and use a prompt state machine to collect user information step by step, see [src/app/agentConfigs/frontDeskAuthentication/authentication.ts](src/app/agentConfigs/frontDeskAuthentication/authentication.ts)
-- To see how to wire up Agents into a single Agent Set, see [src/app/agentConfigs/frontDeskAuthentication/index.ts](src/app/agentConfigs/frontDeskAuthentication/index.ts)
-- If you want help creating your own prompt using these conventions, we've included a metaprompt [here](src/app/agentConfigs/voiceAgentMetaprompt.txt), or you can use our [Voice Agent Metaprompter GPT](https://chatgpt.com/g/g-678865c9fb5c81918fa28699735dd08e-voice-agent-metaprompt-gpt)
+### Customizing the Agent
 
-## UI
-- You can select agent scenarios in the Scenario dropdown, and automatically switch to a specific agent with the Agent dropdown.
-- The conversation transcript is on the left, including tool calls, tool call responses, and agent changes. Click to expand non-message elements.
-- The event log is on the right, showing both client and server events. Click to see the full payload.
-- On the bottom, you can disconnect, toggle between automated voice-activity detection or PTT, turn off audio playback, and toggle logs.
+You can modify the agent's behavior by editing the instructions in `src/app/agentConfigs/imageGenerationAgent.ts`. For example, you can:
 
-## Core Contributors
-- Noah MacCallum - [noahmacca](https://x.com/noahmacca)
-- Ilan Bigio - [ibigio](https://github.com/ibigio)
+- Change the agent's personality or tone
+- Add specific guidance for certain types of images
+- Implement additional tools for image manipulation or saving
+
+## User Interface
+
+The application features a clean, modern UI designed for an intuitive image generation experience:
+
+- **Conversation Panel**: The left side displays the conversation transcript between you and the AI assistant
+- **Image Display**: Generated images appear prominently in the center of the screen
+- **Control Bar**: The bottom toolbar provides controls for:
+  - Microphone toggle (Push-to-Talk or Voice Activity Detection)
+  - Audio playback toggle
+  - Connection status and controls
+  - Image generation status indicator
+
+## Technical Implementation
+
+### API Endpoint
+
+The image generation is handled by a dedicated API endpoint at `/api/images/generate/route.ts`:
+
+```typescript
+import { NextResponse } from "next/server";
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function POST(req: Request) {
+  try {
+    const { prompt } = await req.json();
+    
+    if (!prompt) {
+      return NextResponse.json(
+        { error: "Prompt is required" },
+        { status: 400 }
+      );
+    }
+    
+    const result = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: prompt,
+      size: "1024x1024"
+    });
+    
+    return NextResponse.json({ image_url: result.data[0].url });
+  } catch (error: any) {
+    console.error("Error generating image:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to generate image" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Project Structure
+
+- `/src/app/agentConfigs/imageGenerationAgent.ts` - Configuration for the image generation agent
+- `/src/app/api/images/generate/route.ts` - API endpoint for DALL-E 3 image generation
+- `/src/app/App.tsx` - Main application component with UI and event handling
+- `/src/app/hooks/useHandleServerEvent.ts` - Hook for processing server events and tool calls
+
+## Contributors
+
+- Deepak Lenka - [deepak-lenka](https://github.com/deepak-lenka)
