@@ -6,7 +6,7 @@ import { TranscriptItem } from "@/app/types";
 
 type TranscriptContextValue = {
   transcriptItems: TranscriptItem[];
-  addTranscriptMessage: (itemId: string, role: "user" | "assistant", text: string, hidden?: boolean) => void;
+  addTranscriptMessage: (itemId: string, role: "user" | "assistant", text: string, hidden?: boolean, data?: Record<string, any>) => void;
   updateTranscriptMessage: (itemId: string, text: string, isDelta: boolean) => void;
   addTranscriptBreadcrumb: (title: string, data?: Record<string, any>) => void;
   toggleTranscriptItemExpand: (itemId: string) => void;
@@ -27,7 +27,7 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
     });
   }
 
-  const addTranscriptMessage: TranscriptContextValue["addTranscriptMessage"] = (itemId, role, text = "", isHidden = false) => {
+  const addTranscriptMessage: TranscriptContextValue["addTranscriptMessage"] = (itemId, role, text = "", isHidden = false, data = undefined) => {
     setTranscriptItems((prev) => {
       if (prev.some((log) => log.itemId === itemId && log.type === "MESSAGE")) {
         console.warn(`[addTranscriptMessage] skipping; message already exists for itemId=${itemId}, role=${role}, text=${text}`);
@@ -39,6 +39,7 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
         type: "MESSAGE",
         role,
         title: text,
+        data,
         expanded: false,
         timestamp: newTimestampPretty(),
         createdAtMs: Date.now(),

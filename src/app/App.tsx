@@ -112,12 +112,50 @@ function App() {
         console.error('Error parsing tool call arguments:', error);
       }
     }
+
+    // Handle tool_call.response event for image generation
+    if (event.type === "tool_call.response" && 
+        event.call_id && 
+        event.output?.image_url && 
+        event.output?.prompt) {
+      console.log('Processing tool_call.response for image generation:', event.output);
+      // This ensures we catch the response with the image URL
+      addImageToTranscript(event.output.image_url, event.output.prompt);
+    }
   }, []);
   
+  // Helper function to add image to transcript
+  const addImageToTranscript = useCallback((imageUrl: string, prompt: string) => {
+    console.log('Adding image to transcript:', imageUrl, prompt);
+    // Create a unique ID for this message
+    const messageId = uuidv4().slice(0, 32);
+    // Add a visible message with the image
+    addTranscriptMessage(messageId, 'assistant', 'Here is the image I created for you:', false, {
+      imageUrl: imageUrl,
+      imagePrompt: prompt
+    });
+    // Update UI state
+    setGeneratedImage(imageUrl);
+    setIsGeneratingImage(false);
+    
+    // Trigger a follow-up response from the AI to ask for feedback
+    // Short timeout to ensure the image is displayed first
+    setTimeout(() => {
+      sendClientEvent(
+        { type: "response.create" },
+        "(trigger feedback response after image generation)"
+      );
+    }, 1000);
+  }, [addTranscriptMessage, sendClientEvent]);
+
   // Separate function to process image generation
   const processImageGeneration = useCallback((prompt: string, callId?: string) => {
     console.log('Generating image with prompt:', prompt);
     setIsGeneratingImage(true);
+    
+    // First, add a message indicating we're generating an image
+    const loadingMessageId = uuidv4().slice(0, 32);
+    addTranscriptMessage(loadingMessageId, 'assistant', "I'm creating your image now... This might take a moment.", false);
     
     // Make API call to generate image
     fetch('/api/images/generate', {
@@ -133,8 +171,9 @@ function App() {
     })
     .then(data => {
       console.log('Image generation successful, received URL:', data.image_url);
-      setGeneratedImage(data.image_url);
-      setIsGeneratingImage(false);
+      
+      // Add the image to the transcript
+      addImageToTranscript(data.image_url, prompt);
       
       // Send tool call response back to the server
       if (callId) {
@@ -154,6 +193,9 @@ function App() {
       console.error('Error generating image:', error);
       setIsGeneratingImage(false);
       
+      // Add error message to transcript
+      addTranscriptMessage(uuidv4().slice(0, 32), 'assistant', "I'm sorry, I couldn't generate the image. Please try again.", false);
+      
       // Send error response back to the server
       if (callId) {
         sendClientEvent({
@@ -164,7 +206,7 @@ function App() {
         });
       }
     });
-  }, [sendClientEvent]);
+  }, [sendClientEvent, addTranscriptMessage, addImageToTranscript]);
 
   useEffect(() => {
     // Use the image generation agent
@@ -531,53 +573,12 @@ function App() {
                 sessionStatus === "CONNECTED" &&
                 dcRef.current?.readyState === "open"
               }
+              generatedImage={generatedImage}
+              isGeneratingImage={isGeneratingImage}
             />
           </div>
           
-          {/* Image Generation Display */}
-          {(generatedImage || isGeneratingImage) && (
-            <div className="p-6 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
-              <h3 className="text-xl font-medium mb-4 text-purple-700">Your Generated Image</h3>
-              {isGeneratingImage ? (
-                <div className="flex flex-col items-center justify-center h-80 bg-white rounded-lg border border-gray-200 shadow-inner">
-                  <svg className="animate-spin h-12 w-12 text-purple-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <p className="text-gray-600 font-medium">Creating your masterpiece...</p>
-                  <p className="text-gray-500 text-sm mt-2">This may take a few moments</p>
-                </div>
-              ) : generatedImage ? (
-                <div className="flex flex-col items-center">
-                  <div className="relative group">
-                    <img 
-                      src={generatedImage} 
-                      alt="Generated image" 
-                      className="max-h-[500px] w-auto object-contain rounded-lg shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end justify-center">
-                      <div className="p-4 text-white text-center w-full">
-                        <a 
-                          href={generatedImage} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors duration-300"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                          </svg>
-                          View Full Size
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="mt-4 text-sm text-gray-600 bg-white/70 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm">
-                    Created with OpenAI's DALL-E 3 model
-                  </p>
-                </div>
-              ) : null}
-            </div>
-          )}
+          {/* Image display moved to Transcript component */}
         </div>
 
         {/* Keep Events component but hide it with CSS */}

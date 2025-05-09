@@ -11,6 +11,8 @@ export interface TranscriptProps {
   setUserText: (val: string) => void;
   onSendMessage: () => void;
   canSend: boolean;
+  generatedImage?: string | null;
+  isGeneratingImage?: boolean;
 }
 
 function Transcript({
@@ -18,6 +20,8 @@ function Transcript({
   setUserText,
   onSendMessage,
   canSend,
+  generatedImage,
+  isGeneratingImage,
 }: TranscriptProps) {
   const { transcriptItems, toggleTranscriptItemExpand } = useTranscript();
   const transcriptRef = useRef<HTMLDivElement | null>(null);
@@ -101,6 +105,9 @@ function Transcript({
             if (isHidden) {
               return null;
             }
+            
+            // Check if this message contains an image
+            const hasImage = data && data.imageUrl;
 
             if (type === "MESSAGE") {
               const isUser = role === "user";
@@ -132,6 +139,73 @@ function Transcript({
                     <div className={`whitespace-pre-wrap ${messageStyle}`}>
                       <ReactMarkdown>{displayTitle}</ReactMarkdown>
                     </div>
+                    
+                    {/* Display image if this message contains one */}
+                    {hasImage && (
+                      <div className="mt-4 w-full max-w-[600px]">
+                        <div className="relative group mt-2">
+                          <img 
+                            src={data.imageUrl} 
+                            alt="Generated image" 
+                            className="w-full rounded-lg shadow-lg border border-gray-200 transition-all duration-300 hover:shadow-xl" 
+                            onError={(e) => {
+                              console.error('Image failed to load:', data.imageUrl);
+                              const target = e.target as HTMLImageElement;
+                              target.onerror = null; // Prevent infinite loops
+                              target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0yNCAxMGMwLTUuNTIzLTQuNDc3LTEwLTEwLTEwcy0xMCA0LjQ3Ny0xMCAxMGMwIDUuNTIzIDQuNDc3IDEwIDEwIDEwczEwLTQuNDc3IDEwLTEwem0tMTEgNWgtMnYtMTBoMnY0aDZ2LTRoMnYxMGgtMnYtNGgtNnY0eiIvPjwvc3ZnPg==';
+                              target.alt = 'Image failed to load';
+                              target.className = 'w-full h-64 object-contain bg-gray-100 rounded-lg border border-red-300';
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end justify-center">
+                            <div className="p-4 text-white text-center w-full">
+                              <a 
+                                href={data.imageUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-white hover:bg-white/30 transition-colors duration-300"
+                              >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                View Full Size
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Display the prompt underneath the image */}
+                        {data.imagePrompt && (
+                          <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-200">
+                            <span className="font-semibold">Prompt:</span> {data.imagePrompt}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Show loading indicator if image is being generated - ChatGPT style */}
+                    {isGeneratingImage && role === 'assistant' && title.includes('creating') && (
+                      <div className="mt-4 flex flex-col items-center">
+                        <div className="w-full max-w-[400px] aspect-square bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center p-4">
+                          {/* Grid of squares animation */}
+                          <div className="grid grid-cols-4 gap-2 w-32 h-32">
+                            {Array.from({ length: 16 }).map((_, index) => (
+                              <div 
+                                key={index}
+                                className={`bg-purple-400 rounded-sm opacity-40 animate-pulse`}
+                                style={{
+                                  animationDelay: `${index * 0.1}s`,
+                                  animationDuration: '1.5s'
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="mt-3 flex items-center">
+                          <div className="animate-pulse mr-2 h-2 w-2 bg-purple-500 rounded-full"></div>
+                          <p className="text-gray-600 font-medium">Creating your image...</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
