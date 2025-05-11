@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="320" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+  </defs>
+  <rect x="40" y="40" width="240" height="240" rx="40" fill="url(#gradient)" />
+  <g fill="white">
+    <!-- Camera/Image frame -->
+    <rect x="80" y="100" width="160" height="120" rx="10" fill="none" stroke="white" stroke-width="12" />
+    <!-- Camera lens -->
+    <circle cx="160" cy="160" r="40" fill="none" stroke="white" stroke-width="12" />
+    <circle cx="160" cy="160" r="20" fill="white" />
+    <!-- Magic sparkles -->
+    <path d="M230,90 L240,80 L250,90 L240,100 Z" />
+    <path d="M70,230 L80,220 L90,230 L80,240 Z" />
+    <path d="M230,230 L240,220 L250,230 L240,240 Z" />
+    <path d="M70,90 L80,80 L90,90 L80,100 Z" />
+  </g>
+</svg>

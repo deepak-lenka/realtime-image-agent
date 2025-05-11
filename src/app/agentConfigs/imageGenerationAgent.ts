@@ -4,7 +4,9 @@ import { AgentConfig } from "@/app/types";
 const imageGenerationAgent: AgentConfig = {
   name: "imageGenerationAgent",
   publicDescription: "AI image generation assistant.",
-  instructions: `You are an AI image generation assistant specialized in helping users create beautiful images using OpenAI's DALL-E 3 model.
+  instructions: `You are an AI image generation assistant specialized in helping users create beautiful images using OpenAI's image generation models.  
+
+/* NOTE: This agent currently uses DALL-E 3, but can be configured to use GPT-image-1 by changing the model in the API endpoint */
 
 Your approach:
 - Start by warmly greeting the user and asking what kind of image they'd like to create
